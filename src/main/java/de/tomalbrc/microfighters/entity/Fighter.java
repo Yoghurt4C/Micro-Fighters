@@ -76,7 +76,7 @@ public class Fighter extends PathfinderMob implements PolymerEntity {
                 .add(Attributes.FOLLOW_RANGE, 10.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.15)
                 .add(Attributes.ATTACK_DAMAGE, 2.0)
-                .add(Attributes.ENTITY_INTERACTION_RANGE, 0.1)
+                .add(Attributes.ENTITY_INTERACTION_RANGE, 0.75f)
                 .add(Attributes.BLOCK_INTERACTION_RANGE, 0.1)
                 .add(Attributes.ARMOR, 1.0)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.1);
@@ -134,16 +134,18 @@ public class Fighter extends PathfinderMob implements PolymerEntity {
     }
 
     @Override
-    public void customServerAiStep(ServerLevel level) {
-        if (this.isDeadOrDying() && this.level() instanceof ServerLevel serverLevel) {
-            if (this.item != null) this.spawnAtLocation(serverLevel, this.item);
+    protected void tickDeath() {
+        super.tickDeath();
+
+        if (this.level() instanceof ServerLevel serverLevel) {
+            if (this.item != null)
+                this.spawnAtLocation(serverLevel, this.item);
+
             serverLevel.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, particleItem(this.color).getDefaultInstance()), this.getX(), this.getY(), this.getZ(), 20, 0.125, 0.125, 0.125, 0.05);
+
             this.dropCustomDeathLoot(serverLevel, this.damageSources().genericKill(), true);
             this.discard();
-            return;
-
         }
-        super.customServerAiStep(level);
     }
 
     @Override
@@ -167,7 +169,7 @@ public class Fighter extends PathfinderMob implements PolymerEntity {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, true));
+        this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1f, true));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
 
@@ -316,6 +318,6 @@ public class Fighter extends PathfinderMob implements PolymerEntity {
             res = this.getBoundingBox();
         }
 
-        return res.inflate(0.4, 0.0F, 0.4);
+        return res.inflate(1f, 0f, 1f);
     }
 }
